@@ -12,7 +12,6 @@ int g_xform_mode = TRANSFORM_NONE;
 int   g_main_window;
 double g_windows_width, g_windows_height;
 
-CObj g_obj;
 //the lighting
 static GLfloat g_light0_ambient[] = { 0.4f, 0.4f, 0.0f, 0.5f };//环境光
 static GLfloat g_light0_diffuse[] = { 1.0f, 1.0f, 1.0f, 0.5f };//散射光
@@ -190,10 +189,23 @@ void DrawCone()
 
 }
 
-void DrawModel(CObj& model)
+void DrawModel()
 {//TODO: 绘制模型
-
-
+	auto faceData = CObj::getInstance()->getFaceData();
+	auto vertexData = CObj::getInstance()->getVertexData();
+	Vector3* pa, * pb, * pc;
+	glBegin(GL_TRIANGLES);
+	for (auto it = faceData.begin(); it != faceData.end(); it++)
+	{
+		glNormal3f(it->normal.fX, it->normal.fY, it->normal.fZ);
+		pa = &vertexData[it->pts[0] - 1].pos;
+		pb = &vertexData[it->pts[1] - 1].pos;
+		pc = &vertexData[it->pts[2] - 1].pos;
+		glVertex3f(pa->fX, pa->fY, pa->fZ);
+		glVertex3f(pb->fX, pb->fY, pb->fZ);
+		glVertex3f(pc->fX, pc->fY, pc->fZ);
+	}
+	glEnd();
 }
 
 //平移
@@ -218,7 +230,7 @@ void ScaleContrl()
 
 void myInit()
 {
-	glClearColor(.9f, .9f, .9f, 1.0f);//用白色清屏
+	glClearColor(.1f, .4f, 9.0f, 1.0f);//用白色清屏
 
 	glLightfv(GL_LIGHT0, GL_AMBIENT, g_light0_ambient);//设置场景的环境光
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, g_light0_diffuse);//设置场景的散射光
@@ -272,7 +284,7 @@ void loadObjFile(void)
 	GetOpenFileName(&fname);
 	wglMakeCurrent(hDC, hRC);
 
-	g_obj.ReadObjFile(fname.lpstrFile); //读入模型文件
+	CObj::getInstance()->ReadObjFile(fname.lpstrFile); //读入模型文件
 }
 
 void myGlutDisplay() //绘图函数， 操作系统在必要时刻就会对窗体进行重新绘制操作
@@ -296,7 +308,8 @@ void myGlutDisplay() //绘图函数， 操作系统在必要时刻就会对窗体进行重新绘制操作
 
 		//缩放
 		ScaleContrl();
-		DrawModel(g_obj);
+
+		DrawModel();
 	}
 	else if (g_draw_content == SHAPE_TRIANGLE)  //画三角形
 	{

@@ -2,7 +2,10 @@
 #define OBJ_CLASS
 
 #include <vector>
+#include <map>
 #include <cmath>
+#include<string>
+using namespace std;
 
 struct Vector3;
 Vector3 operator + (const Vector3& one, const Vector3& two);
@@ -19,6 +22,9 @@ struct Vector3
 	double fZ;
 	Vector3(double x = 0.0, double y = 0.0, double z = 0.0) : fX(x), fY(y), fZ(z) {}
 	Vector3 operator +=(const Vector3& v) { return *this = *this + v; }
+	Vector3 operator -=(const Vector3& v) { return *this = *this - v; }
+	Vector3 operator *=(double const& scale) { return *this = *this * scale; }
+	Vector3 operator /=(double const& scale) { return *this = *this / scale; }
 	double Magnitude() { return sqrt(fX * fX + fY * fY + fZ * fZ); }
 	Vector3 Normalize()//归一化
 	{
@@ -35,12 +41,29 @@ struct Vector3
 
 struct Point
 {
+	Point() {}
+	Point(Vector3 position) :pos(position)
+	{
+		normal = pos;
+	}
 	Vector3 pos;
-	Vector3 normal;
+	Vector3 normal; // 顶点法线
 };
 
 struct Face
 {
+	Face()
+	{
+		pts[0] = 0;
+		pts[1] = 0;
+		pts[2] = 0;
+	}
+	Face(int a, int b, int c)
+	{
+		pts[0] = a;
+		pts[1] = b;
+		pts[2] = c;
+	}
 	int pts[3];
 	Vector3 normal;
 };
@@ -48,16 +71,36 @@ struct Face
 class CObj
 {
 public:
-	CObj(void);
 	~CObj(void);
 
-	std::vector<Point> m_pts; //顶点
-	std::vector<Face> m_faces;//面
+	static CObj* getInstance()
+	{
+		if (instance == nullptr)
+		{
+			instance = new CObj();
+		}
+		return instance;
+	}
 
-public:
-	bool ReadObjFile(const char* pcszFileName);//读入模型文件
+	bool ReadObjFile(char* pcszFileName);//读入模型文件
 
+	vector<Point> getVertexData();
+	vector<Face> getFaceData();
+
+	vector<Point>* m_pts;
+	vector<Face>* m_faces;
 private:
+	static CObj* instance;
+
+	CObj(void);
+
+
+	//存在字典里面，减少重复读文件加载次数
+	std::map <string, vector<Point>> vertexDataMap;
+	std::map <string, vector<Face>> faceDataMap;
+
+	std::vector<Point>& findVertexContainer(char* fileName);
+	std::vector<Face>& findFaceContainer(char* fileName);
 	void UnifyModel();//单位化模型
 	void ComputeFaceNormal(Face& f);//计算面的法线
 };
