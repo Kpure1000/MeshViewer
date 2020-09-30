@@ -95,6 +95,16 @@ void DrawCircle()
 	glEnd();
 }
 
+void DrawCylinder()
+{
+
+}
+
+void DrawCone()
+{
+
+}
+
 void DrawModel(CObj &model)
 {//TODO: 绘制模型
 
@@ -194,11 +204,11 @@ void myGlutDisplay() //绘图函数， 操作系统在必要时刻就会对窗体进行重新绘制操作
 	}
 	else if (g_draw_content == SHAPE_CYLINDER)  
 	{//TODO: 添加画圆柱的代码
-
+		DrawCylinder();
 	}
 	else if (g_draw_content == SHAPE_CONE) 
 	{//TODO：添加画圆锥的代码
-
+		DrawCone();
 	}
 	glPopMatrix();
 	glutSwapBuffers(); //双缓冲
@@ -243,7 +253,7 @@ void myGlutMouse(int button, int state, int x, int y)
 			g_xform_mode = TRANSFORM_TRANSLATE; 
 		}
 		else if (button ==  GLUT_RIGHT_BUTTON) 
-		{//按下鼠标的滑轮表示按下鼠标的右键表示对模型进行缩放操作
+		{//按下鼠标的滑轮表示对模型进行缩放操作
 			g_xform_mode = TRANSFORM_SCALE; 
 		}
 	}
@@ -255,13 +265,17 @@ void myGlutMouse(int button, int state, int x, int y)
 
 void myGlutMotion(int x, int y) //处理当鼠标键摁下时,鼠标拖动的事件
 {
+	Vector3 originDir;
+	originDir.fX = x - g_press_x;
+	originDir.fY = y - g_press_y;
+	originDir.fZ = 0;
 	if (g_xform_mode == TRANSFORM_ROTATE) //旋转
 	{//TODO:添加鼠标移动控制模型旋转参数的代码
-
+		
 	}
 	else if(g_xform_mode == TRANSFORM_SCALE) //缩放
 	{//TODO:添加鼠标移动控制模型缩放参数的代码
-
+		
 	}
 	else if(g_xform_mode == TRANSFORM_TRANSLATE) //平移
 	{//TODO:添加鼠标移动控制模型平移参数的代码
