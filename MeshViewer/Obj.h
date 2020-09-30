@@ -10,6 +10,7 @@ Vector3 operator - (const Vector3& one, const Vector3& two);
 Vector3 operator * (const Vector3& one, double scale);
 Vector3 operator / (const Vector3& one, double scale);
 Vector3 Cross(Vector3& one, Vector3& two);
+Vector3 Dot(Vector3& va, Vector3& vb);
 
 struct Vector3
 {
@@ -18,16 +19,17 @@ struct Vector3
 	double fZ;
 	Vector3(double x = 0.0, double y = 0.0, double z = 0.0) : fX(x), fY(y), fZ(z) {}
 	Vector3 operator +=(const Vector3& v) { return *this = *this + v; }
-	double Length() { return sqrt(fX * fX + fY * fY + fZ * fZ); }
-	void Normalize()//归一化
+	double Magnitude() { return sqrt(fX * fX + fY * fY + fZ * fZ); }
+	Vector3 Normalize()//归一化
 	{
-		double fLen = Length();
+		double fLen = Magnitude();
 		if (fabs(fLen) > 1e-6)
 		{
 			fX /= fLen;
 			fY /= fLen;
 			fZ /= fLen;
 		}
+		return *this;
 	}
 };
 

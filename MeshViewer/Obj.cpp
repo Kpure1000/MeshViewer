@@ -37,6 +37,11 @@ Vector3 Cross(Vector3& one, Vector3& two)
 	return vCross;		
 }
 
+Vector3 Dot(Vector3& va, Vector3& vb)
+{
+	return va.fX * vb.fX + va.fY * vb.fY + va.fZ * vb.fZ;
+}
+
 CObj::CObj(void)
 {
 }
