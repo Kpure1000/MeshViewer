@@ -193,17 +193,23 @@ void DrawModel()
 {//TODO: »æÖÆÄ£ÐÍ
 	auto faceData = CObj::getInstance()->getFaceData();
 	auto vertexData = CObj::getInstance()->getVertexData();
-	Vector3* pa, * pb, * pc;
+	Point* pa, * pb, * pc;
 	glBegin(GL_TRIANGLES);
 	for (auto it = faceData.begin(); it != faceData.end(); it++)
 	{
-		glNormal3f(it->normal.fX, it->normal.fY, it->normal.fZ);
-		pa = &vertexData[it->pts[0] - 1].pos;
-		pb = &vertexData[it->pts[1] - 1].pos;
-		pc = &vertexData[it->pts[2] - 1].pos;
-		glVertex3f(pa->fX, pa->fY, pa->fZ);
-		glVertex3f(pb->fX, pb->fY, pb->fZ);
-		glVertex3f(pc->fX, pc->fY, pc->fZ);
+		//glNormal3f(it->normal.fX, it->normal.fY, it->normal.fZ);
+		pa = &vertexData[it->pts[0] - 1];
+		pb = &vertexData[it->pts[1] - 1];
+		pc = &vertexData[it->pts[2] - 1];
+
+		glNormal3f(pa->normal.fX, pa->normal.fY, pa->normal.fZ);
+		glVertex3f(pa->pos.fX, pa->pos.fY, pa->pos.fZ);
+
+		glNormal3f(pb->normal.fX, pb->normal.fY, pb->normal.fZ);
+		glVertex3f(pb->pos.fX, pb->pos.fY, pb->pos.fZ);
+
+		glNormal3f(pc->normal.fX, pc->normal.fY, pc->normal.fZ);
+		glVertex3f(pc->pos.fX, pc->pos.fY, pc->pos.fZ);
 	}
 	glEnd();
 }
