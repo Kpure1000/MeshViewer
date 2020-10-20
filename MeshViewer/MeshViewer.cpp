@@ -195,9 +195,9 @@ void DrawModel()
 	auto vertexData = CObj::getInstance()->getVertexData();
 	Point* pa, * pb, * pc;
 	glBegin(GL_TRIANGLES);
-	/*for (auto it = faceData.begin(); it != faceData.end(); it++)
+	for (auto it = faceData.begin(); it != faceData.end(); it++)
 	{
-		glNormal3f(it->normal.fX, it->normal.fY, it->normal.fZ);
+		//glNormal3f(it->normal.fX, it->normal.fY, it->normal.fZ);
 		pa = &vertexData[it->pts[0] - 1];
 		pb = &vertexData[it->pts[1] - 1];
 		pc = &vertexData[it->pts[2] - 1];
@@ -210,8 +210,8 @@ void DrawModel()
 
 		glNormal3f(pc->normal.fX, pc->normal.fY, pc->normal.fZ);
 		glVertex3f(pc->pos.fX, pc->pos.fY, pc->pos.fZ);
-	}*/
-	for (size_t i = 0; i < faceData.size(); i++)
+	}
+	/*for (size_t i = 0; i < faceData.size(); i++)
 	{
 		if (i < faceData.size() / 2)
 		{
@@ -240,7 +240,7 @@ void DrawModel()
 		}
 		
 		glVertex3f(pc->pos.fX, pc->pos.fY, pc->pos.fZ);
-	}
+	}*/
 	glEnd();
 }
 
@@ -287,14 +287,37 @@ void myInit()
 	//第一组eyex, eyey,eyez 相机在世界坐标的位置;第二组centerx,centery,centerz 相机镜头对准的物体在世界坐标的位置;第三组upx,upy,upz 相机向上的方向在世界坐标中的方向
 }
 
+#if !_DEBUG
+string TCHAR2STRING(TCHAR* str) {
+	std::string strstr;
+	try
+	{
+		int iLen = WideCharToMultiByte(CP_ACP, 0, str, -1, NULL, 0, NULL, NULL);
+
+		char* chRtn = new char[iLen * sizeof(char)];
+
+		WideCharToMultiByte(CP_ACP, 0, str, -1, chRtn, iLen, NULL, NULL);
+
+		strstr = chRtn;
+	}
+	catch (exception e)
+	{
+	}
+
+	return strstr;
+}
+#endif // _DEBUG
+
 void loadObjFile(void)
 {//加载模型
 
 	//调用系统对话框
+
+#if _DEBUG 
 	OPENFILENAME  fname;
 	ZeroMemory(&fname, sizeof(fname));
-	char strfile[200] = "*.obj";
-	char szFilter[] = TEXT("OBJ Files(*.OBJ)\0");
+	char strfile[200] = "";
+	char szFilter[] = TEXT("All\0*.*\0OBJ Files(*.OBJ)\0\0");
 	fname.lStructSize = sizeof(OPENFILENAME);
 	fname.hwndOwner = NULL;
 	fname.hInstance = NULL;
@@ -302,11 +325,11 @@ void loadObjFile(void)
 	fname.lpstrCustomFilter = NULL;
 	fname.nFilterIndex = 0;
 	fname.nMaxCustFilter = 0;
-	fname.lpstrFile = strfile;
+	fname.lpstrFile = (LPSTR)strfile;
 	fname.nMaxFile = 200;
 	fname.lpstrFileTitle = NULL;
 	fname.nMaxFileTitle = 0;
-	fname.lpstrTitle = NULL;
+	fname.lpstrTitle = "请选择一个模型文件";
 	fname.Flags = OFN_HIDEREADONLY | OFN_CREATEPROMPT;
 	fname.nFileOffset = 0;
 	fname.nFileExtension = 0;
@@ -321,7 +344,30 @@ void loadObjFile(void)
 	wglMakeCurrent(hDC, hRC);
 
 	CObj::getInstance()->ReadObjFile(fname.lpstrFile); //读入模型文件
+#else 
+	OPENFILENAME ofn = { 0 };
+	TCHAR strFileName[MAX_PATH] = { 0 };	//用于接收文件名
+	ofn.lStructSize = sizeof(OPENFILENAME);	//结构体大小
+	ofn.hwndOwner = NULL;					//拥有着窗口句柄
+	ofn.lpstrFilter = TEXT("All\0*.*\0OBJ Files(*.OBJ)\0\0");	//设置过滤
+	ofn.nFilterIndex = 1;	//过滤器索引
+	ofn.lpstrFile = strFileName;	//接收返回的文件名，注意第一个字符需要为NULL
+	ofn.nMaxFile = sizeof(strFileName);	//缓冲区长度
+	ofn.lpstrInitialDir = NULL;			//初始目录为默认
+	ofn.lpstrTitle = TEXT("请选择一个模型文件"); //窗口标题
+	ofn.Flags = OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY; //文件、目录必须存在，隐藏只读选项
+	//打开文件对话框
+	if (GetOpenFileName(&ofn)) {
+		string filePath = TCHAR2STRING(strFileName);
+		CObj::getInstance()->ReadObjFile((char*)filePath.c_str()); //读入模型文件
+	}
+	else {
+		//MessageBox(NULL, TEXT("请选择一文件"), NULL, MB_ICONERROR);
+	}
+
+#endif
 }
+
 
 void myGlutDisplay() //绘图函数， 操作系统在必要时刻就会对窗体进行重新绘制操作
 {
