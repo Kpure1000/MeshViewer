@@ -72,6 +72,7 @@ bool CObj::ReadObjFile(char* pcszFileName)
 			char buffer[255];
 			float x, y, z;
 			int a, b, c;
+			int other;
 			while (!reader.getline(buffer, 255).eof())
 			{
 				if (buffer[0] == 'v')//¶¥µã
@@ -81,7 +82,7 @@ bool CObj::ReadObjFile(char* pcszFileName)
 				}
 				else if (buffer[0] == 'f')//Ãæ
 				{
-					sscanf_s(buffer, "f %d %d %d", &a, &b, &c);
+					sscanf_s(buffer, "f %d/%d/%d %d/%d/%d %d/%d/%d", &a, &other, &other, &b, &other, &other, &c, &other, &other);
 					m_faces->push_back(Face(a, b, c));
 				}
 			}

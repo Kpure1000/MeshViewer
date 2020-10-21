@@ -13,12 +13,12 @@ int   g_main_window;
 double g_windows_width, g_windows_height;
 
 //the lighting
-static GLfloat g_light0_ambient[] = { 0.4f, 0.4f, 0.0f, 0.5f };//环境光
+static GLfloat g_light0_ambient[] = { 0.3f, 0.6f, 0.2f, 0.5f };//环境光
 static GLfloat g_light0_diffuse[] = { 1.0f, 1.0f, 1.0f, 0.5f };//散射光
-static GLfloat g_light0_specular[] = { 0.4f,0.4f, 0.0f, 0.5f }; //镜面光
+static GLfloat g_light0_specular[] = { 0.0f,0.0f, 0.0f, 0.5f }; //镜面光
 static GLfloat g_light0_position[] = { 0.0f, 0.0f, 30.0f, 0.5f };//光源的位置。第4个参数为1，表示点光源；第4个参数量为0，表示平行光束{0.0f, 0.0f, 10.0f, 0.0f}
 
-static GLfloat g_material[] = { 0.96f, 0.8f, 0.69f, 1.0f };//材质
+static GLfloat g_material[] = { 1.0f, 1.0f, 1.0f, 1.0f };//材质
 static GLfloat g_rquad = 0;
 static GLfloat g_rquad_tmp = 0;
 

@@ -1,9 +1,9 @@
-﻿  Obj.cpp
-C:\Users\ktsq\Desktop\OpenGL\MeshViewer\MeshViewer\Obj.cpp(176,15): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+﻿  MeshViewer.cpp
+C:\glui-2.36\src\include\gl\glui.h(944,24): warning C4834: 放弃具有 "nodiscard" 属性的函数的返回值
   正在生成代码
-  4 of 731 functions ( 0.5%) were compiled, the rest were copied from previous compilation.
+  0 of 732 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
-    3 functions had inline decision re-evaluated but remain unchanged
+    0 functions had inline decision re-evaluated but remain unchanged
   已完成代码的生成
 glui32.lib(algebra3.obj) : warning LNK4099: 未找到 PDB“_glui library.pdb”(使用“glui32.lib(algebra3.obj)”或在“C:\Users\ktsq\Desktop\OpenGL\MeshViewer\Release\_glui library.pdb”中寻找)；正在链接对象，如同没有调试信息一样
 glui32.lib(arcball.obj) : warning LNK4099: 未找到 PDB“_glui library.pdb”(使用“glui32.lib(arcball.obj)”或在“C:\Users\ktsq\Desktop\OpenGL\MeshViewer\Release\_glui library.pdb”中寻找)；正在链接对象，如同没有调试信息一样
