@@ -5,3 +5,6 @@
 /x86
 */Debug/
 /Debug
+
+/Release/
+*/Release/
