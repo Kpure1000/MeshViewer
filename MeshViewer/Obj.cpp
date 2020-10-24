@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <fstream>
 #include <string>
+#include<gl/glut.h>
 using namespace std;
 
 Vector3 operator + (const Vector3& one, const Vector3& two) //两个向量相加
@@ -96,9 +97,9 @@ bool CObj::ReadObjFile(char* pcszFileName)
 		Point* v_a, * v_b, * v_c;
 		for (auto it = m_faces->begin(); it != m_faces->end(); it++)
 		{
-			v_a = &(*m_pts)[it->pts[0]-1];
-			v_b = &(*m_pts)[it->pts[1]-1];
-			v_c = &(*m_pts)[it->pts[2]-1];
+			v_a = &(*m_pts)[it->pts[0] - 1];
+			v_b = &(*m_pts)[it->pts[1] - 1];
+			v_c = &(*m_pts)[it->pts[2] - 1];
 			//首先计算面元法线
 			it->normal = Cross(v_c->pos - v_b->pos, v_a->pos - v_b->pos).Normalize();
 			//然后计算顶点法线
@@ -134,7 +135,7 @@ vector<Face> CObj::getFaceData()
 std::vector<Point>& CObj::findVertexContainer(char* fileName)
 {
 	string fstr(fileName);
-	
+
 	if (vertexDataMap.find(fstr) == vertexDataMap.end())
 	{
 		vertexDataMap[fstr] = vector<Point>();
@@ -185,3 +186,20 @@ void CObj::ComputeFaceNormal(Face& f)
 }
 
 //在这里画棋盘图像
+void MakeMap(int w, int h, GLubyte image[][tHeight][4])
+{
+	GLubyte c;
+	for (size_t i = 0; i < h; i++)
+	{
+		for (size_t j = 0; j < w; j++)
+		{
+			c = (((i & 0x8) == 0) ^ ((j & 0x8) == 0)) * 255;
+			//计算纹理颜色
+			image[i][j][0] = GLubyte(c * 0.2);
+			image[i][j][1] = GLubyte(c * 0.9);
+			image[i][j][2] = GLubyte(c * 0.3);
+			image[i][j][3] = GLubyte(255);
+
+		}
+	}
+}

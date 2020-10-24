@@ -5,7 +5,13 @@
 #include <map>
 #include <cmath>
 #include<string>
+#include<gl/glut.h>
 using namespace std;
+
+#define tWidth  64
+#define tHeight 64
+
+void MakeMap(int w, int h, GLubyte image[tWidth][tHeight][4]);
 
 struct Vector3;
 Vector3 operator + (const Vector3& one, const Vector3& two);

@@ -5,7 +5,7 @@
 #include <math.h>
 #include "Obj.h"
 #include "common.h"
-
+#include<cassert>
 #include<ctime>
 
 int g_xform_mode = TRANSFORM_NONE;
@@ -29,6 +29,7 @@ static float g_scale_size = 1;
 static int  g_press_x; //鼠标按下时的x坐标
 static int  g_press_y; //鼠标按下时的y坐标
 
+//这个n是园的插值数
 const int n = 1000;
 const GLfloat R = 0.5f;
 const GLfloat Pi = 3.1415926536f;
@@ -60,32 +61,59 @@ float MyTime::deltaTime = 0.0f;
 float MyTime::totalTime = 0.0f;
 float MyTime::tmpDeltaTime = 0.0f;
 
+//GLubyte*** image;
+GLubyte image[tWidth][tHeight][4];
+GLuint texName;
 
 void DrawTriangle()
 {//绘制三角形
+	glEnable(GL_TEXTURE_2D);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+
+	glBindTexture(GL_TEXTURE_2D, texName);
 	glBegin(GL_TRIANGLES);
 	glNormal3f(0.0f, 0.0f, 1.0f);  //指定面法向
+	glTexCoord2f(0.5f, 0.0f);
 	glVertex3f(0.0f, 1.0f, 0.0f);                    // 上顶点
+	glTexCoord2f(0.0f, 1.0f);
 	glVertex3f(-1.0f, -1.0f, 0.0f);                    // 左下
+	glTexCoord2f(1.0f, 1.0f);
 	glVertex3f(1.0f, -1.0f, 0.0f);                    // 右下
 	glEnd();
+	glDisable(GL_TEXTURE_2D);
 }
 
 void DrawCube()
 {//绘制立方体
+	glEnable(GL_TEXTURE_2D);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+
+	glBindTexture(GL_TEXTURE_2D, texName);
 	glBegin(GL_QUADS);
 	glNormal3f(0.0f, 0.0f, 1.0f);  //指定面法向
+	glTexCoord2f(0.0f, 0.0f);
 	glVertex3f(1.0f, 1.0f, 1.0f);   //列举面顶点数据，逆时针顺序
+	glTexCoord2f(0.0f, 1.0f);
 	glVertex3f(-1.0f, 1.0f, 1.0f);
+	glTexCoord2f(1.0f, 1.0f);
 	glVertex3f(-1.0f, -1.0f, 1.0f);
+	glTexCoord2f(1.0f, 0.0f);
 	glVertex3f(1.0f, -1.0f, 1.0f);
-	//前----------------------------  
+	glEnd();
+	glDisable(GL_TEXTURE_2D);
+	//前---------------------------- 
+	glBegin(GL_QUADS);
 	glNormal3f(0.0f, 0.0f, -1.0f);
+
 	glVertex3f(-1.0f, -1.0f, -1.0f);
+
 	glVertex3f(-1.0f, 1.0f, -1.0f);
+
 	glVertex3f(1.0f, 1.0f, -1.0f);
+
 	glVertex3f(1.0f, -1.0f, -1.0f);
 	//后----------------------------  
+	glBegin(GL_QUADS);
 	glNormal3f(0.0f, 1.0f, 0.0f);
 	glVertex3f(1.0f, 1.0f, 1.0f);
 	glVertex3f(1.0f, 1.0f, -1.0f);
@@ -115,34 +143,57 @@ void DrawCube()
 
 void DrawCircle()
 {//绘制圆
+	glEnable(GL_TEXTURE_2D);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+
+	glBindTexture(GL_TEXTURE_2D, texName);
 	glBegin(GL_POLYGON);
 	glNormal3f(0.0f, 0.0f, 1.0f);
-	for (int i = 0; i < n; ++i)
+	for (int i = 0; i < n; ++i) {
+		glTexCoord2f(R * cos(2 * Pi / n * i), R * sin(2 * Pi / n * i));
 		glVertex3f(R * cos(2 * Pi / n * i), R * sin(2 * Pi / n * i), 0.0f);
+	}
 	glEnd();
+	glDisable(GL_TEXTURE_2D);
 }
 
 void DrawCylinder()
 {
 	//下底面
+	glEnable(GL_TEXTURE_2D);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+
+	glBindTexture(GL_TEXTURE_2D, texName);
 	glBegin(GL_POLYGON);
 	glNormal3f(0.0f, 0.0f, -1.0f);
 	for (int i = 0; i < n; i++)
 	{
+		glTexCoord2f(R * cos(2 * Pi / n * i), R * sin(2 * Pi / n * i));
 		glVertex3f(R * cos(2 * Pi / n * i), R * sin(2 * Pi / n * i), -1.0f);
 	}
 	glEnd();
+	glDisable(GL_TEXTURE_2D);
 
 	//上底面
+	glEnable(GL_TEXTURE_2D);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+
+	glBindTexture(GL_TEXTURE_2D, texName);
 	glBegin(GL_POLYGON);
 	glNormal3f(0.0f, 0.0f, 1.0f);
 	for (int i = 0; i < n; i++)
 	{
+		glTexCoord2f(R * cos(2 * Pi / n * i), R * sin(2 * Pi / n * i));
 		glVertex3f(R * cos(2 * Pi / n * i), R * sin(2 * Pi / n * i), 1.0f);
 	}
 	glEnd();
+	glDisable(GL_TEXTURE_2D);
 
 	//侧面
+	glEnable(GL_TEXTURE_2D);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+
+	glBindTexture(GL_TEXTURE_2D, texName);
 	glBegin(GL_QUADS);
 	for (int i = 0; i < n; i++)
 	{
@@ -152,27 +203,42 @@ void DrawCylinder()
 		ver_d = { (double)R * cos(2 * Pi / n * i), (double)R * sin(2 * Pi / n * i), 1.0 };
 		normal = Cross(ver_c - ver_b, ver_a - ver_b).Normalize();
 		glNormal3f(normal.fX, normal.fY, normal.fZ);
+		glTexCoord2f((float)i / n * R * Pi, 1.0f);
 		glVertex3f(ver_a.fX, ver_a.fY, ver_a.fZ);
+		glTexCoord2f((float)(i + 1) / n * R * Pi, 1.0f);
 		glVertex3f(ver_b.fX, ver_b.fY, ver_b.fZ);
+		glTexCoord2f((float)(i + 1) / n * R * Pi, 0.0f);
 		glVertex3f(ver_c.fX, ver_c.fY, ver_c.fZ);
+		glTexCoord2f((float)i / n * R * Pi, 0.0f);
 		glVertex3f(ver_d.fX, ver_d.fY, ver_d.fZ);
 	}
 	glEnd();
+	glDisable(GL_TEXTURE_2D);
 
 }
 
 void DrawCone()
 {
 	//底面
+	glEnable(GL_TEXTURE_2D);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+
+	glBindTexture(GL_TEXTURE_2D, texName);
 	glBegin(GL_POLYGON);
 	glNormal3f(0.0f, 0.0f, -1.0f);
 	for (int i = 0; i < n; i++)
 	{
+		glTexCoord2f(R * cos(2 * Pi / n * i), R * sin(2 * Pi / n * i));
 		glVertex3f(R * cos(2 * Pi / n * i), R * sin(2 * Pi / n * i), -1.0f);
 	}
 	glEnd();
+	glDisable(GL_TEXTURE_2D);
 
 	//侧面
+	glEnable(GL_TEXTURE_2D);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+
+	glBindTexture(GL_TEXTURE_2D, texName);
 	glBegin(GL_TRIANGLES);
 	ver_c = { 0,0,1 };
 	for (int i = 0; i < n; i++)
@@ -181,11 +247,20 @@ void DrawCone()
 		ver_b = { (double)R * cos(2 * Pi / n * (i + 1)), (double)R * sin(2 * Pi / n * (i + 1)), -1.0 };
 		normal = Cross(ver_c - ver_b, ver_a - ver_b).Normalize();
 		glNormal3f(normal.fX, normal.fY, normal.fZ);
+		glTexCoord2f((float)i / n * R * Pi, 1.0f);
 		glVertex3f(ver_a.fX, ver_a.fY, ver_a.fZ);
+		glTexCoord2f((float)(i + 1) / n * R * Pi, 1.0f);
 		glVertex3f(ver_b.fX, ver_b.fY, ver_b.fZ);
+		glTexCoord2f((float)(i + 0.5) / n * R * Pi, 0.0f);
 		glVertex3f(ver_c.fX, ver_c.fY, ver_c.fZ);
 	}
 	glEnd();
+	glDisable(GL_TEXTURE_2D);
+
+}
+
+void DrawBall()
+{
 
 }
 
@@ -197,50 +272,20 @@ void DrawModel()
 	glBegin(GL_TRIANGLES);
 	for (auto it = faceData.begin(); it != faceData.end(); it++)
 	{
-		//glNormal3f(it->normal.fX, it->normal.fY, it->normal.fZ);
+		glNormal3f(it->normal.fX, it->normal.fY, it->normal.fZ);
 		pa = &vertexData[it->pts[0] - 1];
 		pb = &vertexData[it->pts[1] - 1];
 		pc = &vertexData[it->pts[2] - 1];
 
-		glNormal3f(pa->normal.fX, pa->normal.fY, pa->normal.fZ);
+		//glNormal3f(pa->normal.fX, pa->normal.fY, pa->normal.fZ);
 		glVertex3f(pa->pos.fX, pa->pos.fY, pa->pos.fZ);
 
-		glNormal3f(pb->normal.fX, pb->normal.fY, pb->normal.fZ);
+		//glNormal3f(pb->normal.fX, pb->normal.fY, pb->normal.fZ);
 		glVertex3f(pb->pos.fX, pb->pos.fY, pb->pos.fZ);
 
-		glNormal3f(pc->normal.fX, pc->normal.fY, pc->normal.fZ);
+		//glNormal3f(pc->normal.fX, pc->normal.fY, pc->normal.fZ);
 		glVertex3f(pc->pos.fX, pc->pos.fY, pc->pos.fZ);
 	}
-	/*for (size_t i = 0; i < faceData.size(); i++)
-	{
-		if (i < faceData.size() / 2)
-		{
-			glNormal3f(faceData[i].normal.fX, faceData[i].normal.fY, faceData[i].normal.fZ);
-		}
-		pa = &vertexData[faceData[i].pts[0] - 1];
-		pb = &vertexData[faceData[i].pts[1] - 1];
-		pc = &vertexData[faceData[i].pts[2] - 1];
-
-		if (i >= faceData.size() / 2)
-		{
-			glNormal3f(pa->normal.fX, pa->normal.fY, pa->normal.fZ);
-		}
-		
-		glVertex3f(pa->pos.fX, pa->pos.fY, pa->pos.fZ);
-		if (i >= faceData.size() / 2)
-		{
-			glNormal3f(pb->normal.fX, pb->normal.fY, pb->normal.fZ);
-
-		}
-		glVertex3f(pb->pos.fX, pb->pos.fY, pb->pos.fZ);
-		if (i >= faceData.size() / 2)
-		{
-			glNormal3f(pc->normal.fX, pc->normal.fY, pc->normal.fZ);
-
-		}
-		
-		glVertex3f(pc->pos.fX, pc->pos.fY, pc->pos.fZ);
-	}*/
 	glEnd();
 }
 
@@ -368,6 +413,22 @@ void loadObjFile(void)
 #endif
 }
 
+void textInitialization()
+{
+	MakeMap(tWidth, tHeight, image);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+	glGenTextures(1, &texName);
+	glBindTexture(GL_TEXTURE_2D, texName);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tWidth, tHeight,
+		0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+}
 
 void myGlutDisplay() //绘图函数， 操作系统在必要时刻就会对窗体进行重新绘制操作
 {
@@ -473,9 +534,24 @@ void myGlutDisplay() //绘图函数， 操作系统在必要时刻就会对窗体进行重新绘制操作
 
 		DrawCone();
 	}
+	else if (g_draw_content == SHAPE_BALL)
+	{//画球
+		glLoadIdentity();
+		glTranslatef(0.0f, 0.0f, -6.0f);
+
+		//平移
+		TranslateControl();
+
+		//旋转
+		RotateControl();
+
+		//缩放
+		ScaleContrl();
+
+		DrawBall();
+	}
 	glPopMatrix();
 	glutSwapBuffers(); //双缓冲
-
 
 }
 
@@ -612,6 +688,9 @@ void glui_control(int control) //处理控件的返回值
 	case CRTL_MODEL:
 		g_draw_content = SHAPE_MODEL;
 		break;
+	case CRTL_BALL:
+		g_draw_content = SHAPE_BALL;
+		break;
 	default:
 		break;
 	}
@@ -645,6 +724,7 @@ void myGlui()
 	new GLUI_Button(draw_panel, "Circle", CRTL_CIRCLE, glui_control);
 	new GLUI_Button(draw_panel, "Cylinder", CRTL_CYLINDER, glui_control);
 	new GLUI_Button(draw_panel, "Cone", CRTL_CONE, glui_control);
+	new GLUI_Button(draw_panel, "Ball", CRTL_BALL, glui_control);
 	new GLUI_Button(draw_panel, "Model", CRTL_MODEL, glui_control);
 
 	glui->set_main_gfx_window(g_main_window); //将子窗体glui与主窗体main_window绑定，当窗体glui中的控件的值发生过改变，则该glui窗口被重绘
@@ -667,6 +747,7 @@ int main(int argc, char* argv[]) //程序入口
 
 	myGlui();
 	myInit();
+	textInitialization();
 
 	glutMainLoop();//进入glut消息循环
 

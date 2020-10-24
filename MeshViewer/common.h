@@ -13,6 +13,7 @@
 #define CRTL_CYLINDER		0x05
 #define CRTL_CONE			0x06
 #define CRTL_MODEL			0x07
+#define CRTL_BALL			0x08
 
 #define SHAPE_TRIANGLE		0x00
 #define SHAPE_CUBE			0x01
@@ -20,6 +21,7 @@
 #define SHAPE_CYLINDER		0x03
 #define SHAPE_CONE			0x04
 #define SHAPE_MODEL			0x05
+#define SHAPE_BALL			0x05
 
 #define TRANSFORM_NONE      0x51 
 #define TRANSFORM_ROTATE    0x52
