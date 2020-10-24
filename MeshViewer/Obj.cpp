@@ -183,3 +183,5 @@ void CObj::ComputeFaceNormal(Face& f)
 {//TODO:计算面f的法向量，并保存
 	//弃用
 }
+
+//在这里画棋盘图像
