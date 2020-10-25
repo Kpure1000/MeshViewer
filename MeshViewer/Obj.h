@@ -6,12 +6,12 @@
 #include <cmath>
 #include<string>
 #include<gl/glut.h>
+#include<iostream>
 using namespace std;
 
-#define tWidth  64
-#define tHeight 64
 
-void MakeMap(int w, int h, GLubyte image[tWidth][tHeight][4]);
+void MakeMap(int w, int h, GLubyte* image);
+GLubyte* ReadImage(int& w, int& h, string objName);
 
 struct Vector3;
 Vector3 operator + (const Vector3& one, const Vector3& two);
@@ -52,8 +52,13 @@ struct Point
 	{
 		normal = pos;
 	}
+	Point(Vector3 position, Vector3 texCoords) :pos(position), text(texCoords)
+	{
+		normal = pos;
+	}
 	Vector3 pos;
 	Vector3 normal; // 顶点法线
+	Vector3 text; //  纹理坐标
 };
 
 struct Face

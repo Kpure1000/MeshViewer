@@ -1,4 +1,5 @@
 #include <windows.h>
+#include"stb_image.h"
 #include <string.h>
 #include <stdlib.h>
 #include <gl\glui.h>
@@ -61,8 +62,13 @@ float MyTime::deltaTime = 0.0f;
 float MyTime::totalTime = 0.0f;
 float MyTime::tmpDeltaTime = 0.0f;
 
-//GLubyte*** image;
-GLubyte image[tWidth][tHeight][4];
+
+GLubyte* image;
+GLubyte* img;
+
+int tWidth = 64;
+int tHeight = 64;
+
 GLuint texName;
 
 void DrawTriangle()
@@ -269,24 +275,32 @@ void DrawModel()
 	auto faceData = CObj::getInstance()->getFaceData();
 	auto vertexData = CObj::getInstance()->getVertexData();
 	Point* pa, * pb, * pc;
+	glEnable(GL_TEXTURE_2D);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+
+	glBindTexture(GL_TEXTURE_2D, texName);
 	glBegin(GL_TRIANGLES);
 	for (auto it = faceData.begin(); it != faceData.end(); it++)
 	{
-		//glNormal3f(it->normal.fX, it->normal.fY, it->normal.fZ);
+		glNormal3f(it->normal.fX, it->normal.fY, it->normal.fZ);
 		pa = &vertexData[it->pts[0] - 1];
 		pb = &vertexData[it->pts[1] - 1];
 		pc = &vertexData[it->pts[2] - 1];
 
-		glNormal3f(pa->normal.fX, pa->normal.fY, pa->normal.fZ);
+		//glNormal3f(pa->normal.fX, pa->normal.fY, pa->normal.fZ);
+		glTexCoord2f(pa->text.fX, pa->text.fY);
 		glVertex3f(pa->pos.fX, pa->pos.fY, pa->pos.fZ);
 
-		glNormal3f(pb->normal.fX, pb->normal.fY, pb->normal.fZ);
+		//glNormal3f(pb->normal.fX, pb->normal.fY, pb->normal.fZ);
+		glTexCoord2f(pb->text.fX, pb->text.fY);
 		glVertex3f(pb->pos.fX, pb->pos.fY, pb->pos.fZ);
 
-		glNormal3f(pc->normal.fX, pc->normal.fY, pc->normal.fZ);
+		//glNormal3f(pc->normal.fX, pc->normal.fY, pc->normal.fZ);
+		glTexCoord2f(pc->text.fX, pc->text.fY);
 		glVertex3f(pc->pos.fX, pc->pos.fY, pc->pos.fZ);
 	}
 	glEnd();
+	glDisable(GL_TEXTURE_2D);
 }
 
 //平移
@@ -413,21 +427,33 @@ void loadObjFile(void)
 #endif
 }
 
-void textInitialization()
+void textInitialization(const char * texturePath)
 {
-	MakeMap(tWidth, tHeight, image);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
 	glGenTextures(1, &texName);
 	glBindTexture(GL_TEXTURE_2D, texName);
-
+	// 为当前绑定的纹理对象设置环绕、过滤方式
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tWidth, tHeight,
-		0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+	// load texture img
+	int width, height, nrChannels;
+	stbi_set_flip_vertically_on_load(true);
+	GLubyte* data = stbi_load(texturePath, &width, &height, &nrChannels, 0);
+	if (data) {
+		if (nrChannels==4) {
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		}
+		else
+		{
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		}
+	}
+	else {
+		std::cout << "Failed to load texture" << std::endl;
+	}
+	stbi_image_free(data);
 }
 
 void myGlutDisplay() //绘图函数， 操作系统在必要时刻就会对窗体进行重新绘制操作
@@ -747,9 +773,11 @@ int main(int argc, char* argv[]) //程序入口
 
 	myGlui();
 	myInit();
-	textInitialization();
+	textInitialization("Model/blender/castle_out.png");
 
 	glutMainLoop();//进入glut消息循环
+
+	free(image);
 
 	return EXIT_SUCCESS;
 }

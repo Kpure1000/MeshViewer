@@ -1,11 +1,10 @@
 #include "Obj.h"
-#include <iostream>
+#include "stb_image.h"
 #include <sstream>
 #include <algorithm>
 #include <fstream>
 #include <string>
 #include<gl/glut.h>
-using namespace std;
 
 Vector3 operator + (const Vector3& one, const Vector3& two) //两个向量相加
 {
@@ -58,9 +57,12 @@ CObj::~CObj(void)
 bool CObj::ReadObjFile(char* pcszFileName)
 {//读取模型文件
 	printf("模型文件名称: %s\n", pcszFileName);
-
+	
 	m_pts = &findVertexContainer(pcszFileName);
 	m_faces = &findFaceContainer(pcszFileName);
+	GLubyte* img;
+	int w, h;
+	img = ReadImage(w, h, "wall.jpg");
 
 	//如果是第一次读这个文件
 	if (m_pts->empty() && m_faces->empty())
@@ -71,15 +73,29 @@ bool CObj::ReadObjFile(char* pcszFileName)
 		if (reader)
 		{
 			char buffer[255];
+			float u, v;
 			float x, y, z;
 			int a, b, c;
 			int other;
+			int vt_count = 0;
 			while (!reader.getline(buffer, 255).eof())
 			{
 				if (buffer[0] == 'v')//顶点
 				{
-					sscanf_s(buffer, "v %f %f %f", &x, &y, &z);
-					m_pts->push_back(Point({ x,y,z }));
+					if (buffer[1] == 't')
+					{
+						sscanf_s(buffer, "vt %f %f", &u, &v);
+						if (m_pts->size() > 0)
+						{
+							(*m_pts)[vt_count].text = { u,v,0 };
+							vt_count++;
+						}
+					}
+					else
+					{
+						sscanf_s(buffer, "v %f %f %f", &x, &y, &z);
+						m_pts->push_back(Point({ x,y,z }));
+					}
 				}
 				else if (buffer[0] == 'f')//面
 				{
@@ -186,20 +202,34 @@ void CObj::ComputeFaceNormal(Face& f)
 }
 
 //在这里画棋盘图像
-void MakeMap(int w, int h, GLubyte image[][tHeight][4])
+void MakeMap(int w, int h, GLubyte* image)
 {
+	image = (GLubyte*)malloc(sizeof(GLubyte) * w * h * 4);
 	GLubyte c;
-	for (size_t i = 0; i < h; i++)
+	for (size_t i = 0; i < w; i++)
 	{
-		for (size_t j = 0; j < w; j++)
+		for (size_t j = 0; j < h; j++)
 		{
 			c = (((i & 0x8) == 0) ^ ((j & 0x8) == 0)) * 255;
 			//计算纹理颜色
-			image[i][j][0] = GLubyte(c * 0.2);
-			image[i][j][1] = GLubyte(c * 0.9);
-			image[i][j][2] = GLubyte(c * 0.3);
-			image[i][j][3] = GLubyte(255);
+			image[i * h * 4 + j * 4] = GLubyte(c * 0.2);
+			image[i * h * 4 + j * 4 + 1] = GLubyte(c * 0.9);
+			image[i * h * 4 + j * 4 + 2] = GLubyte(c * 0.3);
+			image[i * h * 4 + j * 4 + 3] = GLubyte(255);
 
 		}
 	}
+}
+
+GLubyte* ReadImage(int& w, int& h, string objName)
+{
+	int channel;
+	stbi_set_flip_vertically_on_load(true);
+	auto image = (GLubyte*)stbi_load(objName.c_str(), &w, &h, &channel, 0);
+	if (image != nullptr)
+	{
+		cout << "读取图片成功" << endl;
+		return image;
+	}
+	return nullptr;
 }
