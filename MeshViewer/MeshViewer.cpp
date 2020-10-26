@@ -773,7 +773,7 @@ int main(int argc, char* argv[]) //程序入口
 
 	myGlui();
 	myInit();
-	textInitialization("Model/blender/castle_out.png");
+	textInitialization("Model/blender/aface.png");
 
 	glutMainLoop();//进入glut消息循环
 

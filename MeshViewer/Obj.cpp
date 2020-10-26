@@ -64,6 +64,8 @@ bool CObj::ReadObjFile(char* pcszFileName)
 	int w, h;
 	img = ReadImage(w, h, "wall.jpg");
 
+	int vt_count = 0;
+
 	//如果是第一次读这个文件
 	if (m_pts->empty() && m_faces->empty())
 	{
@@ -77,7 +79,6 @@ bool CObj::ReadObjFile(char* pcszFileName)
 			float x, y, z;
 			int a, b, c;
 			int other;
-			int vt_count = 0;
 			while (!reader.getline(buffer, 255).eof())
 			{
 				if (buffer[0] == 'v')//顶点
@@ -87,7 +88,8 @@ bool CObj::ReadObjFile(char* pcszFileName)
 						sscanf_s(buffer, "vt %f %f", &u, &v);
 						if (m_pts->size() > 0)
 						{
-							(*m_pts)[vt_count].text = { u,v,0 };
+							if (vt_count < m_pts->size())
+								(*m_pts)[vt_count].text = { u,v,0 };
 							vt_count++;
 						}
 					}
@@ -133,7 +135,7 @@ bool CObj::ReadObjFile(char* pcszFileName)
 		UnifyModel(); //将模型归一化
 	}
 
-	printf("该模型 顶点数: %d, 面数: %d\n", m_pts->size(), m_faces->size());
+	printf("该模型 顶点数: %d, 贴图坐标数: %d, 面数: %d\n", m_pts->size(),vt_count, m_faces->size());
 
 	return true;
 }
