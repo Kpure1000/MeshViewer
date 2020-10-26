@@ -61,9 +61,7 @@ bool CObj::ReadObjFile(char* pcszFileName)
 	m_pts = &findVertexContainer(pcszFileName);
 	m_faces = &findFaceContainer(pcszFileName);
 	m_tex = &findTexContainer(pcszFileName);
-	GLubyte* img;
-	int w, h;
-	img = ReadImage(w, h, "wall.jpg");
+	m_nor = &findNorContainer(pcszFileName);
 
 	int vt_count = 0;
 
@@ -76,6 +74,7 @@ bool CObj::ReadObjFile(char* pcszFileName)
 		if (reader)
 		{
 			char buffer[255];
+			float nx, ny, nz;
 			float u, v;
 			float x, y, z;
 			int a, b, c;
@@ -89,16 +88,19 @@ bool CObj::ReadObjFile(char* pcszFileName)
 					{
 						sscanf_s(buffer, "vt %f %f", &u, &v);
 						m_tex->push_back({ u,v,0 });
-						//cout << "贴图: " << u << ", " << v << endl;
+						//cout << "UV坐标: " << u << ", " << v << endl;
 					}
 					else if (buffer[1] == 'n')
 					{
-						//TODO 面法向
+						sscanf_s(buffer, "vn %f %f %f", &nx, &ny, &nz);
+						m_nor->push_back({ nx,ny,nz });
+						//cout << "法向量: " << nx << ", " << ny << ", " << nz << endl;
 					}
 					else
 					{
 						sscanf_s(buffer, "v %f %f %f", &x, &y, &z);
 						m_pts->push_back(Point({ x,y,z }));
+						//cout << "顶点: " << x << ", " << y << ", " << z << endl;
 					}
 				}
 				else if (buffer[0] == 'f')//面
@@ -108,7 +110,7 @@ bool CObj::ReadObjFile(char* pcszFileName)
 				}
 			}
 			reader.close();
-			printf("读取文件完毕\n");
+			printf("读取模型文件完毕\n");
 		}
 		else {
 			return false;
@@ -137,7 +139,8 @@ bool CObj::ReadObjFile(char* pcszFileName)
 		UnifyModel(); //将模型归一化
 	}
 
-	printf("该模型 顶点数: %d, 贴图坐标数: %d, 面数: %d\n", m_pts->size(), m_tex->size(), m_faces->size());
+	printf("该模型 顶点数: %d, 法向量数: %d, 贴图坐标数: %d, 面数: %d\n", m_pts->size(), m_nor->size(), m_tex->size(), m_faces->size());
+
 
 	return true;
 }
@@ -155,6 +158,11 @@ vector<Face> CObj::getFaceData()
 vector<Vector3> CObj::getTexCoordData()
 {
 	return (*m_tex);
+}
+
+vector<Vector3> CObj::getNormalData()
+{
+	return (*m_nor);
 }
 
 std::vector<Point>& CObj::findVertexContainer(char* fileName)
@@ -189,6 +197,16 @@ std::vector<Vector3>& CObj::findTexContainer(char* fileName)
 	}
 	return texDataMap[fstr];
 }
+std::vector<Vector3>& CObj::findNorContainer(char* fileName)
+{
+	string fstr(fileName);
+	if (norDataMap.find(fstr) == norDataMap.end())
+	{
+		norDataMap[fstr] = vector<Vector3>();
+		printf("该模型的法向量数据未在缓存池中，现创建key\n");
+	}
+	return norDataMap[fstr];
+}
 void CObj::UnifyModel()
 {//为统一显示不同尺寸的模型，将模型归一化，将模型尺寸缩放到0.0-1.0之间
 //原理：找出模型的边界最大和最小值，进而找出模型的中心
@@ -221,9 +239,9 @@ void CObj::ComputeFaceNormal(Face& f)
 }
 
 //在这里画棋盘图像
-void MakeMap(int w, int h, GLubyte* image)
+GLubyte* MakeMap(int w, int h, int chennel)
 {
-	image = (GLubyte*)malloc(sizeof(GLubyte) * w * h * 4);
+	GLubyte* image = (GLubyte*)malloc(sizeof(GLubyte) * w * h * chennel);
 	GLubyte c;
 	for (size_t i = 0; i < w; i++)
 	{
@@ -231,13 +249,15 @@ void MakeMap(int w, int h, GLubyte* image)
 		{
 			c = (((i & 0x8) == 0) ^ ((j & 0x8) == 0)) * 255;
 			//计算纹理颜色
-			image[i * h * 4 + j * 4] = GLubyte(c * 0.2);
-			image[i * h * 4 + j * 4 + 1] = GLubyte(c * 0.9);
-			image[i * h * 4 + j * 4 + 2] = GLubyte(c * 0.3);
-			image[i * h * 4 + j * 4 + 3] = GLubyte(255);
+			image[i * h * chennel + j * chennel] = GLubyte(c * 0.2);
+			image[i * h * chennel + j * chennel + 1] = GLubyte(c * 0.9);
+			image[i * h * chennel + j * chennel + 2] = GLubyte(c * 0.3);
+			if (chennel >= 4)
+				image[i * h * chennel + j * chennel + 3] = GLubyte(255);
 
 		}
 	}
+	return image;
 }
 
 GLubyte* ReadImage(int& w, int& h, string objName)

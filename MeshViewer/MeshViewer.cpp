@@ -8,6 +8,7 @@
 #include "common.h"
 #include<cassert>
 #include<ctime>
+#include"Texture.h"
 
 int g_xform_mode = TRANSFORM_NONE;
 int   g_main_window;
@@ -69,14 +70,15 @@ GLubyte* img;
 int tWidth = 64;
 int tHeight = 64;
 
-GLuint texName;
+Texture grimTexture;
+Texture modelTexture;
 
 void DrawTriangle()
 {//绘制三角形
 	glEnable(GL_TEXTURE_2D);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
 
-	glBindTexture(GL_TEXTURE_2D, texName);
+	glBindTexture(GL_TEXTURE_2D, grimTexture.textCode);
 	glBegin(GL_TRIANGLES);
 	glNormal3f(0.0f, 0.0f, 1.0f);  //指定面法向
 	glTexCoord2f(0.5f, 0.0f);
@@ -94,7 +96,7 @@ void DrawCube()
 	glEnable(GL_TEXTURE_2D);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
 
-	glBindTexture(GL_TEXTURE_2D, texName);
+	glBindTexture(GL_TEXTURE_2D, grimTexture.textCode);
 	glBegin(GL_QUADS);
 	glNormal3f(0.0f, 0.0f, 1.0f);  //指定面法向
 	glTexCoord2f(0.0f, 0.0f);
@@ -152,7 +154,7 @@ void DrawCircle()
 	glEnable(GL_TEXTURE_2D);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
 
-	glBindTexture(GL_TEXTURE_2D, texName);
+	glBindTexture(GL_TEXTURE_2D, grimTexture.textCode);
 	glBegin(GL_POLYGON);
 	glNormal3f(0.0f, 0.0f, 1.0f);
 	for (int i = 0; i < n; ++i) {
@@ -169,7 +171,7 @@ void DrawCylinder()
 	glEnable(GL_TEXTURE_2D);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
 
-	glBindTexture(GL_TEXTURE_2D, texName);
+	glBindTexture(GL_TEXTURE_2D, grimTexture.textCode);
 	glBegin(GL_POLYGON);
 	glNormal3f(0.0f, 0.0f, -1.0f);
 	for (int i = 0; i < n; i++)
@@ -184,7 +186,7 @@ void DrawCylinder()
 	glEnable(GL_TEXTURE_2D);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
 
-	glBindTexture(GL_TEXTURE_2D, texName);
+	glBindTexture(GL_TEXTURE_2D, grimTexture.textCode);
 	glBegin(GL_POLYGON);
 	glNormal3f(0.0f, 0.0f, 1.0f);
 	for (int i = 0; i < n; i++)
@@ -199,7 +201,7 @@ void DrawCylinder()
 	glEnable(GL_TEXTURE_2D);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
 
-	glBindTexture(GL_TEXTURE_2D, texName);
+	glBindTexture(GL_TEXTURE_2D, grimTexture.textCode);
 	glBegin(GL_QUADS);
 	for (int i = 0; i < n; i++)
 	{
@@ -229,7 +231,7 @@ void DrawCone()
 	glEnable(GL_TEXTURE_2D);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
 
-	glBindTexture(GL_TEXTURE_2D, texName);
+	glBindTexture(GL_TEXTURE_2D, grimTexture.textCode);
 	glBegin(GL_POLYGON);
 	glNormal3f(0.0f, 0.0f, -1.0f);
 	for (int i = 0; i < n; i++)
@@ -244,7 +246,7 @@ void DrawCone()
 	glEnable(GL_TEXTURE_2D);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
 
-	glBindTexture(GL_TEXTURE_2D, texName);
+	glBindTexture(GL_TEXTURE_2D, grimTexture.textCode);
 	glBegin(GL_TRIANGLES);
 	ver_c = { 0,0,1 };
 	for (int i = 0; i < n; i++)
@@ -272,36 +274,43 @@ void DrawBall()
 
 void DrawModel()
 {//TODO: 绘制模型
+	
 	auto faceData = CObj::getInstance()->getFaceData();
 	auto vertexData = CObj::getInstance()->getVertexData();
 	auto texCoordData = CObj::getInstance()->getTexCoordData();
+	auto normalData = CObj::getInstance()->getNormalData();
 	Point* pa, * pb, * pc;
 	Vector3* ta, * tb, * tc;
+	Vector3* na, * nb, * nc;
 	glEnable(GL_TEXTURE_2D);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
 
-	glBindTexture(GL_TEXTURE_2D, texName);
+	glBindTexture(GL_TEXTURE_2D, modelTexture.textCode);
 	glBegin(GL_TRIANGLES);
 	for (auto it = faceData.begin(); it != faceData.end(); it++)
 	{
-		glNormal3f(it->normal.fX, it->normal.fY, it->normal.fZ);
+		//glNormal3f(it->normal.fX, it->normal.fY, it->normal.fZ);
 		pa = &vertexData[it->pts[0] - 1];
 		pb = &vertexData[it->pts[1] - 1];
 		pc = &vertexData[it->pts[2] - 1];
+
+		na = &normalData[it->vns[0] - 1];
+		nb = &normalData[it->vns[1] - 1];
+		nc = &normalData[it->vns[2] - 1];
 
 		ta = &texCoordData[it->vts[0] - 1];
 		tb = &texCoordData[it->vts[1] - 1];
 		tc = &texCoordData[it->vts[2] - 1];
 
-		//glNormal3f(pa->normal.fX, pa->normal.fY, pa->normal.fZ);
+		glNormal3f(na->fX, na->fY, na->fZ);
 		glTexCoord2f(ta->fX, ta->fY);
 		glVertex3f(pa->pos.fX, pa->pos.fY, pa->pos.fZ);
 
-		//glNormal3f(pb->normal.fX, pb->normal.fY, pb->normal.fZ);
+		glNormal3f(nb->fX, nb->fY, nb->fZ);
 		glTexCoord2f(tb->fX, tb->fY);
 		glVertex3f(pb->pos.fX, pb->pos.fY, pb->pos.fZ);
 
-		//glNormal3f(pc->normal.fX, pc->normal.fY, pc->normal.fZ);
+		glNormal3f(nc->fX, nc->fY, nc->fZ);
 		glTexCoord2f(tc->fX, tc->fY);
 		glVertex3f(pc->pos.fX, pc->pos.fY, pc->pos.fZ);
 	}
@@ -433,8 +442,70 @@ void loadObjFile(void)
 #endif
 }
 
-void textInitialization(const char * texturePath)
+char* loadFile(void)
+{//加载模型
+
+	//调用系统对话框
+
+#if _DEBUG 
+	OPENFILENAME  fname;
+	ZeroMemory(&fname, sizeof(fname));
+	char strfile[200] = "";
+	char szFilter[] = TEXT("All\0*.*\0OBJ Files(*.OBJ)\0\0");
+	fname.lStructSize = sizeof(OPENFILENAME);
+	fname.hwndOwner = NULL;
+	fname.hInstance = NULL;
+	fname.lpstrFilter = szFilter;
+	fname.lpstrCustomFilter = NULL;
+	fname.nFilterIndex = 0;
+	fname.nMaxCustFilter = 0;
+	fname.lpstrFile = (LPSTR)strfile;
+	fname.nMaxFile = 200;
+	fname.lpstrFileTitle = NULL;
+	fname.nMaxFileTitle = 0;
+	fname.lpstrTitle = "请选择一个模型文件";
+	fname.Flags = OFN_HIDEREADONLY | OFN_CREATEPROMPT;
+	fname.nFileOffset = 0;
+	fname.nFileExtension = 0;
+	fname.lpstrDefExt = 0;
+	fname.lCustData = NULL;
+	fname.lpfnHook = NULL;
+	fname.lpTemplateName = NULL;
+	fname.lpstrInitialDir = NULL;
+	HDC hDC = wglGetCurrentDC();
+	HGLRC hRC = wglGetCurrentContext();
+	GetOpenFileName(&fname);
+	wglMakeCurrent(hDC, hRC);
+
+	return fname.lpstrFile; //读入模型文件
+#else 
+	OPENFILENAME ofn = { 0 };
+	TCHAR strFileName[MAX_PATH] = { 0 };	//用于接收文件名
+	ofn.lStructSize = sizeof(OPENFILENAME);	//结构体大小
+	ofn.hwndOwner = NULL;					//拥有着窗口句柄
+	ofn.lpstrFilter = TEXT("All\0*.*\0OBJ Files(*.OBJ)\0\0");	//设置过滤
+	ofn.nFilterIndex = 1;	//过滤器索引
+	ofn.lpstrFile = strFileName;	//接收返回的文件名，注意第一个字符需要为NULL
+	ofn.nMaxFile = sizeof(strFileName);	//缓冲区长度
+	ofn.lpstrInitialDir = NULL;			//初始目录为默认
+	ofn.lpstrTitle = TEXT("请选择一个模型文件"); //窗口标题
+	ofn.Flags = OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY; //文件、目录必须存在，隐藏只读选项
+	//打开文件对话框
+	if (GetOpenFileName(&ofn)) {
+		string filePath = TCHAR2STRING(strFileName);
+		return (char*)filePath.c_str(); //读入模型文件
+	}
+	else {
+		//MessageBox(NULL, TEXT("请选择一文件"), NULL, MB_ICONERROR);
+	}
+
+#endif
+}
+
+int textInitialization(const char * texturePath)
 {
+	GLuint texName;
+	std::cout << "读取图像: " << texturePath << std::endl;
 	glGenTextures(1, &texName);
 	glBindTexture(GL_TEXTURE_2D, texName);
 	// 为当前绑定的纹理对象设置环绕、过滤方式
@@ -455,11 +526,13 @@ void textInitialization(const char * texturePath)
 		{
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
 		}
+		std::cout << "读取纹理成功" << std::endl;
 	}
 	else {
 		std::cout << "Failed to load texture" << std::endl;
 	}
 	stbi_image_free(data);
+	return texName;
 }
 
 void myGlutDisplay() //绘图函数， 操作系统在必要时刻就会对窗体进行重新绘制操作
@@ -776,10 +849,18 @@ int main(int argc, char* argv[]) //程序入口
 	glutInitWindowSize(800, 600); //初始化窗口大小
 
 	g_main_window = glutCreateWindow("Model Viewer"); //创建主窗体Model Viewer
+	
+	auto str = loadFile();
+
+	//textInitialization("Model\\blender\\textured_output.jpg");
+	modelTexture.textCode = textInitialization(str);
+
+	grimTexture = Texture();
+	grimTexture.loadFromMemory(MakeMap, 128, 128, 4);
 
 	myGlui();
 	myInit();
-	textInitialization("C:\\Users\\Kpurek\\Desktop\\OpenGL\\MeshViewer\\MeshViewer\\Model\\blender\\textured_output.jpg");
+
 
 	glutMainLoop();//进入glut消息循环
 

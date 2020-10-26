@@ -10,7 +10,7 @@
 using namespace std;
 
 
-void MakeMap(int w, int h, GLubyte* image);
+GLubyte* MakeMap(int w, int h, int chennel);
 GLubyte* ReadImage(int& w, int& h, string objName);
 
 struct Vector3;
@@ -112,10 +112,12 @@ public:
 	vector<Point> getVertexData();
 	vector<Face> getFaceData();
 	vector<Vector3> getTexCoordData();
+	vector<Vector3> getNormalData();
 
 	vector<Point>* m_pts;
 	vector<Face>* m_faces;
 	vector<Vector3>* m_tex;
+	vector<Vector3>* m_nor;
 
 private:
 	static CObj* instance;
@@ -127,10 +129,12 @@ private:
 	std::map <string, vector<Point>> vertexDataMap;
 	std::map <string, vector<Face>> faceDataMap;
 	std::map <string, vector<Vector3>> texDataMap;
+	std::map <string, vector<Vector3>> norDataMap;
 
 	std::vector<Point>& findVertexContainer(char* fileName);
 	std::vector<Face>& findFaceContainer(char* fileName);
 	std::vector<Vector3>& findTexContainer(char* fileName);
+	std::vector<Vector3>& findNorContainer(char* fileName);
 	void UnifyModel();//单位化模型
 	void ComputeFaceNormal(Face& f);//计算面的法线
 };
