@@ -75,7 +75,21 @@ struct Face
 		pts[1] = b;
 		pts[2] = c;
 	}
+	Face(int a, int b, int c, int ta, int tb, int tc, int na, int nb, int nc)
+	{
+		pts[0] = a;
+		pts[1] = b;
+		pts[2] = c;
+		vts[0] = ta;
+		vts[1] = tb;
+		vts[2] = tc;
+		vns[0] = na;
+		vns[1] = nb;
+		vns[2] = nc;
+	}
 	int pts[3];
+	int vts[3];
+	int vns[3];
 	Vector3 normal;
 };
 
@@ -97,9 +111,12 @@ public:
 
 	vector<Point> getVertexData();
 	vector<Face> getFaceData();
+	vector<Vector3> getTexCoordData();
 
 	vector<Point>* m_pts;
 	vector<Face>* m_faces;
+	vector<Vector3>* m_tex;
+
 private:
 	static CObj* instance;
 
@@ -109,9 +126,11 @@ private:
 	//存在字典里面，减少重复读文件加载次数
 	std::map <string, vector<Point>> vertexDataMap;
 	std::map <string, vector<Face>> faceDataMap;
+	std::map <string, vector<Vector3>> texDataMap;
 
 	std::vector<Point>& findVertexContainer(char* fileName);
 	std::vector<Face>& findFaceContainer(char* fileName);
+	std::vector<Vector3>& findTexContainer(char* fileName);
 	void UnifyModel();//单位化模型
 	void ComputeFaceNormal(Face& f);//计算面的法线
 };

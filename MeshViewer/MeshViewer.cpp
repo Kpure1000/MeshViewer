@@ -274,7 +274,9 @@ void DrawModel()
 {//TODO: 绘制模型
 	auto faceData = CObj::getInstance()->getFaceData();
 	auto vertexData = CObj::getInstance()->getVertexData();
+	auto texCoordData = CObj::getInstance()->getTexCoordData();
 	Point* pa, * pb, * pc;
+	Vector3* ta, * tb, * tc;
 	glEnable(GL_TEXTURE_2D);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
 
@@ -287,16 +289,20 @@ void DrawModel()
 		pb = &vertexData[it->pts[1] - 1];
 		pc = &vertexData[it->pts[2] - 1];
 
+		ta = &texCoordData[it->vts[0] - 1];
+		tb = &texCoordData[it->vts[1] - 1];
+		tc = &texCoordData[it->vts[2] - 1];
+
 		//glNormal3f(pa->normal.fX, pa->normal.fY, pa->normal.fZ);
-		glTexCoord2f(pa->text.fX, pa->text.fY);
+		glTexCoord2f(ta->fX, ta->fY);
 		glVertex3f(pa->pos.fX, pa->pos.fY, pa->pos.fZ);
 
 		//glNormal3f(pb->normal.fX, pb->normal.fY, pb->normal.fZ);
-		glTexCoord2f(pb->text.fX, pb->text.fY);
+		glTexCoord2f(tb->fX, tb->fY);
 		glVertex3f(pb->pos.fX, pb->pos.fY, pb->pos.fZ);
 
 		//glNormal3f(pc->normal.fX, pc->normal.fY, pc->normal.fZ);
-		glTexCoord2f(pc->text.fX, pc->text.fY);
+		glTexCoord2f(tc->fX, tc->fY);
 		glVertex3f(pc->pos.fX, pc->pos.fY, pc->pos.fZ);
 	}
 	glEnd();
@@ -773,7 +779,7 @@ int main(int argc, char* argv[]) //程序入口
 
 	myGlui();
 	myInit();
-	textInitialization("Model/blender/aface.png");
+	textInitialization("C:\\Users\\Kpurek\\Desktop\\OpenGL\\MeshViewer\\MeshViewer\\Model\\blender\\textured_output.jpg");
 
 	glutMainLoop();//进入glut消息循环
 

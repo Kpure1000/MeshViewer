@@ -60,6 +60,7 @@ bool CObj::ReadObjFile(char* pcszFileName)
 	
 	m_pts = &findVertexContainer(pcszFileName);
 	m_faces = &findFaceContainer(pcszFileName);
+	m_tex = &findTexContainer(pcszFileName);
 	GLubyte* img;
 	int w, h;
 	img = ReadImage(w, h, "wall.jpg");
@@ -67,7 +68,7 @@ bool CObj::ReadObjFile(char* pcszFileName)
 	int vt_count = 0;
 
 	//如果是第一次读这个文件
-	if (m_pts->empty() && m_faces->empty())
+	if (m_pts->empty() && m_faces->empty() && m_tex->empty())
 	{
 		printf("缓存为空，读取文件\n");
 		std::ifstream reader(pcszFileName);
@@ -78,7 +79,8 @@ bool CObj::ReadObjFile(char* pcszFileName)
 			float u, v;
 			float x, y, z;
 			int a, b, c;
-			int other;
+			int vta, vtb, vtc;
+			int vna, vnb, vnc;
 			while (!reader.getline(buffer, 255).eof())
 			{
 				if (buffer[0] == 'v')//顶点
@@ -86,12 +88,12 @@ bool CObj::ReadObjFile(char* pcszFileName)
 					if (buffer[1] == 't')
 					{
 						sscanf_s(buffer, "vt %f %f", &u, &v);
-						if (m_pts->size() > 0)
-						{
-							if (vt_count < m_pts->size())
-								(*m_pts)[vt_count].text = { u,v,0 };
-							vt_count++;
-						}
+						m_tex->push_back({ u,v,0 });
+						//cout << "贴图: " << u << ", " << v << endl;
+					}
+					else if (buffer[1] == 'n')
+					{
+						//TODO 面法向
 					}
 					else
 					{
@@ -101,8 +103,8 @@ bool CObj::ReadObjFile(char* pcszFileName)
 				}
 				else if (buffer[0] == 'f')//面
 				{
-					sscanf_s(buffer, "f %d/%d/%d %d/%d/%d %d/%d/%d", &a, &other, &other, &b, &other, &other, &c, &other, &other);
-					m_faces->push_back(Face(a, b, c));
+					sscanf_s(buffer, "f %d/%d/%d %d/%d/%d %d/%d/%d", &a, &vta, &vna, &b, &vtb, &vnb, &c, &vtc, &vnc);
+					m_faces->push_back(Face(a, b, c, vta, vtb, vtc, vna, vnb, vnc));
 				}
 			}
 			reader.close();
@@ -135,7 +137,7 @@ bool CObj::ReadObjFile(char* pcszFileName)
 		UnifyModel(); //将模型归一化
 	}
 
-	printf("该模型 顶点数: %d, 贴图坐标数: %d, 面数: %d\n", m_pts->size(),vt_count, m_faces->size());
+	printf("该模型 顶点数: %d, 贴图坐标数: %d, 面数: %d\n", m_pts->size(), m_tex->size(), m_faces->size());
 
 	return true;
 }
@@ -148,6 +150,11 @@ vector<Point> CObj::getVertexData()
 vector<Face> CObj::getFaceData()
 {
 	return (*m_faces);
+}
+
+vector<Vector3> CObj::getTexCoordData()
+{
+	return (*m_tex);
 }
 
 std::vector<Point>& CObj::findVertexContainer(char* fileName)
@@ -171,6 +178,16 @@ std::vector<Face>& CObj::findFaceContainer(char* fileName)
 		printf("该模型的面数据未在缓存池中，现创建key\n");
 	}
 	return faceDataMap[fstr];
+}
+std::vector<Vector3>& CObj::findTexContainer(char* fileName)
+{
+	string fstr(fileName);
+	if (texDataMap.find(fstr) == texDataMap.end())
+	{
+		texDataMap[fstr] = vector<Vector3>();
+		printf("该模型的贴图数据未在缓存池中，现创建key\n");
+	}
+	return texDataMap[fstr];
 }
 void CObj::UnifyModel()
 {//为统一显示不同尺寸的模型，将模型归一化，将模型尺寸缩放到0.0-1.0之间
