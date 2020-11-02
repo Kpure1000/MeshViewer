@@ -463,7 +463,7 @@ char* loadFile(void)
 	fname.nMaxFile = 200;
 	fname.lpstrFileTitle = NULL;
 	fname.nMaxFileTitle = 0;
-	fname.lpstrTitle = "请选择一个模型文件";
+	fname.lpstrTitle = "请选择一个图形文件";
 	fname.Flags = OFN_HIDEREADONLY | OFN_CREATEPROMPT;
 	fname.nFileOffset = 0;
 	fname.nFileExtension = 0;
@@ -488,7 +488,7 @@ char* loadFile(void)
 	ofn.lpstrFile = strFileName;	//接收返回的文件名，注意第一个字符需要为NULL
 	ofn.nMaxFile = sizeof(strFileName);	//缓冲区长度
 	ofn.lpstrInitialDir = NULL;			//初始目录为默认
-	ofn.lpstrTitle = TEXT("请选择一个模型文件"); //窗口标题
+	ofn.lpstrTitle = TEXT("请选择一个图形文件"); //窗口标题
 	ofn.Flags = OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY; //文件、目录必须存在，隐藏只读选项
 	//打开文件对话框
 	if (GetOpenFileName(&ofn)) {
@@ -829,7 +829,7 @@ void myGlui()
 	new GLUI_Button(draw_panel, "Circle", CRTL_CIRCLE, glui_control);
 	new GLUI_Button(draw_panel, "Cylinder", CRTL_CYLINDER, glui_control);
 	new GLUI_Button(draw_panel, "Cone", CRTL_CONE, glui_control);
-	new GLUI_Button(draw_panel, "Ball", CRTL_BALL, glui_control);
+	//new GLUI_Button(draw_panel, "Ball", CRTL_BALL, glui_control);
 	new GLUI_Button(draw_panel, "Model", CRTL_MODEL, glui_control);
 
 	glui->set_main_gfx_window(g_main_window); //将子窗体glui与主窗体main_window绑定，当窗体glui中的控件的值发生过改变，则该glui窗口被重绘
