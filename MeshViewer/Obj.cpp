@@ -1,5 +1,6 @@
 #include "Obj.h"
-#include "stb_image.h"
+#include <stb/stb_image_write.h>
+#include<stb/stb_image.h>
 #include <sstream>
 #include <algorithm>
 #include <fstream>
@@ -37,7 +38,7 @@ Vector3 Cross(Vector3& one, Vector3& two)
 	return vCross;
 }
 
-Vector3 Dot(Vector3& va, Vector3& vb)
+float Dot(Vector3& va, Vector3& vb)
 {
 	return va.fX * vb.fX + va.fY * vb.fY + va.fZ * vb.fZ;
 }
@@ -247,7 +248,7 @@ GLubyte* MakeMap(int w, int h, int chennel)
 	{
 		for (size_t j = 0; j < h; j++)
 		{
-			c = (((i & 0x8) == 0) ^ ((j & 0x8) == 0)) * 255;
+			c = (((i & 0x1) == 0) ^ ((j & 0x1) == 0)) * 255;
 			//计算纹理颜色
 			image[i * h * chennel + j * chennel] = GLubyte(c * 0.2);
 			image[i * h * chennel + j * chennel + 1] = GLubyte(c * 0.9);
@@ -257,6 +258,10 @@ GLubyte* MakeMap(int w, int h, int chennel)
 
 		}
 	}
+	/*stbi_flip_vertically_on_write(true);
+	stbi_write_bmp("outImg.bmp", w, h, chennel, image);
+	cout << "保存在文件: outImg" << endl;*/
+
 	return image;
 }
 

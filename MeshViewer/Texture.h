@@ -2,7 +2,8 @@
 #include<GL/glut.h>
 #include<string>
 #include<iostream>
-#include"stb_image.h"
+#include<stb/stb_image.h>
+#include<stb/stb_image_write.h>
 
 using namespace std;
 
@@ -25,7 +26,7 @@ public:
 		glBindTexture(GL_TEXTURE_2D, textCode);
 	}
 
-	void loadFromMemory(GLubyte* (*makeImageByPixel)(int,int,int), int const& width, int const& height, int const& channel)
+	void loadFromMemory(GLubyte* (*makeImageByPixel)(int, int, int), int const& width, int const& height, int const& channel)
 	{
 		glGenTextures(1, &textCode);
 		cout << "Texture: µ±Ç°ÎÆÀí: " << textCode << endl;
@@ -49,7 +50,8 @@ public:
 		else {
 			std::cout << "Failed to load texture" << std::endl;
 		}
-		free(data);
+		if (data != NULL)
+			free(data);
 	}
 
 	void loadFromFile(const char* texturePath)
@@ -80,6 +82,7 @@ public:
 		else {
 			std::cout << "Failed to load texture" << std::endl;
 		}
+
 		stbi_image_free(data);
 	}
 };

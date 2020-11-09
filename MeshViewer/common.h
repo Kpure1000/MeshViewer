@@ -21,7 +21,7 @@
 #define SHAPE_CYLINDER		0x03
 #define SHAPE_CONE			0x04
 #define SHAPE_MODEL			0x05
-#define SHAPE_BALL			0x05
+#define SHAPE_BALL			0x06
 
 #define TRANSFORM_NONE      0x51 
 #define TRANSFORM_ROTATE    0x52

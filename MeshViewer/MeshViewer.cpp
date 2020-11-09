@@ -1,5 +1,4 @@
 #include <windows.h>
-#include"stb_image.h"
 #include <string.h>
 #include <stdlib.h>
 #include <gl\glui.h>
@@ -51,6 +50,8 @@ Vector3 ver_c;
 Vector3 ver_d;
 Vector3 normal;
 
+Vector3 va, vb, vc, vd;
+
 //用于获取增量时间的静态类
 class MyTime
 {
@@ -64,14 +65,27 @@ float MyTime::totalTime = 0.0f;
 float MyTime::tmpDeltaTime = 0.0f;
 
 
-GLubyte* image;
-GLubyte* img;
 
 int tWidth = 64;
 int tHeight = 64;
 
 Texture grimTexture;
 Texture modelTexture;
+
+Vector3 VertexToTexcoord(Vector3 const& center, Vector3 const& ver)
+{
+	Vector3 dir = (ver - center).Normalize();
+	float cosZ = dir.fZ;
+	float cosX = dir.fX / sqrt(dir.fX * dir.fX + dir.fY * dir.fY);
+	if (dir.fY > 0)
+	{
+		return { acos(cosX) / Pi / 2,acos(cosZ) / Pi,0 };
+	}
+	else
+	{
+		return { 1 - (double)acos(cosX) / Pi / 2,acos(cosZ) / Pi,0 };
+	}
+}
 
 void DrawTriangle()
 {//绘制三角形
@@ -99,54 +113,130 @@ void DrawCube()
 	glBindTexture(GL_TEXTURE_2D, grimTexture.textCode);
 	glBegin(GL_QUADS);
 	glNormal3f(0.0f, 0.0f, 1.0f);  //指定面法向
-	glTexCoord2f(0.0f, 0.0f);
+	//glTexCoord2f(0.0f, 0.0f);
+	Vector3 tx = VertexToTexcoord({ 0,0,0 }, { 1.0f, 1.0f, 1.0f });
+	glTexCoord2f(tx.fX, tx.fY);
 	glVertex3f(1.0f, 1.0f, 1.0f);   //列举面顶点数据，逆时针顺序
-	glTexCoord2f(0.0f, 1.0f);
+	//glTexCoord2f(0.0f, 1.0f);
+	tx = VertexToTexcoord({ 0,0,0 }, { -1.0f, 1.0f, 1.0f });
+	glTexCoord2f(tx.fX, tx.fY);
 	glVertex3f(-1.0f, 1.0f, 1.0f);
-	glTexCoord2f(1.0f, 1.0f);
+	//glTexCoord2f(1.0f, 1.0f);
+	tx = VertexToTexcoord({ 0,0,0 }, { -1.0f, -1.0f, 1.0f });
+	glTexCoord2f(tx.fX, tx.fY);
 	glVertex3f(-1.0f, -1.0f, 1.0f);
-	glTexCoord2f(1.0f, 0.0f);
+	//glTexCoord2f(1.0f, 0.0f);
+	tx = VertexToTexcoord({ 0,0,0 }, { 1.0f, -1.0f, 1.0f });
+	glTexCoord2f(tx.fX, tx.fY);
 	glVertex3f(1.0f, -1.0f, 1.0f);
 	glEnd();
 	glDisable(GL_TEXTURE_2D);
 	//前---------------------------- 
+	glEnable(GL_TEXTURE_2D);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+
+	glBindTexture(GL_TEXTURE_2D, grimTexture.textCode);
 	glBegin(GL_QUADS);
 	glNormal3f(0.0f, 0.0f, -1.0f);
-
+	tx = VertexToTexcoord({ 0,0,0 }, { -1.0f, -1.0f, -1.0f });
+	glTexCoord2f(tx.fX, tx.fY);
 	glVertex3f(-1.0f, -1.0f, -1.0f);
-
+	tx = VertexToTexcoord({ 0,0,0 }, { -1.0f, 1.0f, -1.0f });
+	glTexCoord2f(tx.fX, tx.fY);
 	glVertex3f(-1.0f, 1.0f, -1.0f);
-
+	tx = VertexToTexcoord({ 0,0,0 }, { 1.0f, 1.0f, -1.0f });
+	glTexCoord2f(tx.fX, tx.fY);
 	glVertex3f(1.0f, 1.0f, -1.0f);
-
+	tx = VertexToTexcoord({ 0,0,0 }, { 1.0f, -1.0f, -1.0f });
+	glTexCoord2f(tx.fX, tx.fY);
 	glVertex3f(1.0f, -1.0f, -1.0f);
-	//后----------------------------  
+	glEnd();
+	glDisable(GL_TEXTURE_2D);
+	//后---------------------------- 
+	glEnable(GL_TEXTURE_2D);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+
+	glBindTexture(GL_TEXTURE_2D, grimTexture.textCode);
 	glBegin(GL_QUADS);
 	glNormal3f(0.0f, 1.0f, 0.0f);
+	tx = VertexToTexcoord({ 0,0,0 }, { 1.0f, 1.0f, 1.0f });
+	glTexCoord2f(tx.fX, tx.fY);
 	glVertex3f(1.0f, 1.0f, 1.0f);
+	tx = VertexToTexcoord({ 0,0,0 }, { 1.0f, 1.0f, -1.0f });
+	glTexCoord2f(tx.fX, tx.fY);
 	glVertex3f(1.0f, 1.0f, -1.0f);
+	tx = VertexToTexcoord({ 0,0,0 }, { -1.0f, 1.0f, -1.0f });
+	glTexCoord2f(tx.fX, tx.fY);
 	glVertex3f(-1.0f, 1.0f, -1.0f);
+	tx = VertexToTexcoord({ 0,0,0 }, { -1.0f, 1.0f, 1.0f });
+	glTexCoord2f(tx.fX, tx.fY);
 	glVertex3f(-1.0f, 1.0f, 1.0f);
-	//上----------------------------  
-	glNormal3f(0.0f, -1.0f, 0.0f);
-	glVertex3f(-1.0f, -1.0f, -1.0f);
-	glVertex3f(1.0f, -1.0f, -1.0f);
-	glVertex3f(1.0f, -1.0f, 1.0f);
-	glVertex3f(-1.0f, -1.0f, 1.0f);
-	//下----------------------------  
-	glNormal3f(1.0f, 0.0f, 0.0f);
-	glVertex3f(1.0f, 1.0f, 1.0f);
-	glVertex3f(1.0f, -1.0f, 1.0f);
-	glVertex3f(1.0f, -1.0f, -1.0f);
-	glVertex3f(1.0f, 1.0f, -1.0f);
-	//右----------------------------  
-	glNormal3f(-1.0f, 0.0f, 0.0f);
-	glVertex3f(-1.0f, -1.0f, -1.0f);
-	glVertex3f(-1.0f, -1.0f, 1.0f);
-	glVertex3f(-1.0f, 1.0f, 1.0f);
-	glVertex3f(-1.0f, 1.0f, -1.0f);
-	//左----------------------------*/  
 	glEnd();
+	glDisable(GL_TEXTURE_2D);
+	//上---------------------------- 
+	glEnable(GL_TEXTURE_2D);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+
+	glBindTexture(GL_TEXTURE_2D, grimTexture.textCode);
+	glBegin(GL_QUADS);
+	glNormal3f(0.0f, -1.0f, 0.0f);
+	tx = VertexToTexcoord({ 0,0,0 }, { -1.0f, -1.0f, -1.0f });
+	glTexCoord2f(tx.fX, tx.fY);
+	glVertex3f(-1.0f, -1.0f, -1.0f);
+	tx = VertexToTexcoord({ 0,0,0 }, { 1.0f, -1.0f, -1.0f });
+	glTexCoord2f(tx.fX, tx.fY);
+	glVertex3f(1.0f, -1.0f, -1.0f);
+	tx = VertexToTexcoord({ 0,0,0 }, { 1.0f, -1.0f, 1.0f });
+	glTexCoord2f(tx.fX, tx.fY);
+	glVertex3f(1.0f, -1.0f, 1.0f);
+	tx = VertexToTexcoord({ 0,0,0 }, { -1.0f, -1.0f, 1.0f });
+	glTexCoord2f(tx.fX, tx.fY);
+	glVertex3f(-1.0f, -1.0f, 1.0f);
+	glEnd();
+	glDisable(GL_TEXTURE_2D);
+	//下---------------------------- 
+	glEnable(GL_TEXTURE_2D);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+
+	glBindTexture(GL_TEXTURE_2D, grimTexture.textCode);
+	glBegin(GL_QUADS);
+	glNormal3f(1.0f, 0.0f, 0.0f);
+	tx = VertexToTexcoord({ 0,0,0 }, { 1.0f, 1.0f, 1.0f });
+	glTexCoord2f(tx.fX, tx.fY);
+	glVertex3f(1.0f, 1.0f, 1.0f);
+	tx = VertexToTexcoord({ 0,0,0 }, { 1.0f, -1.0f, 1.0f });
+	glTexCoord2f(tx.fX, tx.fY);
+	glVertex3f(1.0f, -1.0f, 1.0f);
+	tx = VertexToTexcoord({ 0,0,0 }, { 1.0f, -1.0f, -1.0f });
+	glTexCoord2f(tx.fX, tx.fY);
+	glVertex3f(1.0f, -1.0f, -1.0f);
+	tx = VertexToTexcoord({ 0,0,0 }, { 1.0f, 1.0f, -1.0f });
+	glTexCoord2f(tx.fX, tx.fY);
+	glVertex3f(1.0f, 1.0f, -1.0f);
+	glEnd();
+	glDisable(GL_TEXTURE_2D);
+	//右----------------------------  
+	glEnable(GL_TEXTURE_2D);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+
+	glBindTexture(GL_TEXTURE_2D, grimTexture.textCode);
+	glBegin(GL_QUADS);
+	glNormal3f(-1.0f, 0.0f, 0.0f);
+	tx = VertexToTexcoord({ 0,0,0 }, { -1.0f, -1.0f, -1.0f });
+	glTexCoord2f(tx.fX, tx.fY);
+	glVertex3f(-1.0f, -1.0f, -1.0f);
+	tx = VertexToTexcoord({ 0,0,0 }, { -1.0f, -1.0f, 1.0f });
+	glTexCoord2f(tx.fX, tx.fY);
+	glVertex3f(-1.0f, -1.0f, 1.0f);
+	tx = VertexToTexcoord({ 0,0,0 }, { -1.0f, 1.0f, 1.0f });
+	glTexCoord2f(tx.fX, tx.fY);
+	glVertex3f(-1.0f, 1.0f, 1.0f);
+	tx = VertexToTexcoord({ 0,0,0 }, { -1.0f, 1.0f, -1.0f });
+	glTexCoord2f(tx.fX, tx.fY);
+	glVertex3f(-1.0f, 1.0f, -1.0f);
+	glEnd();
+	glDisable(GL_TEXTURE_2D);
+	//左----------------------------*/  
 }
 
 void DrawCircle()
@@ -158,7 +248,9 @@ void DrawCircle()
 	glBegin(GL_POLYGON);
 	glNormal3f(0.0f, 0.0f, 1.0f);
 	for (int i = 0; i < n; ++i) {
-		glTexCoord2f(R * cos(2 * Pi / n * i), R * sin(2 * Pi / n * i));
+		//glTexCoord2f(R * cos(2 * Pi / n * i), R * sin(2 * Pi / n * i));
+		Vector3 tx = VertexToTexcoord({ 0,0,0.1 }, { R * cos(2 * Pi / n * i), R * sin(2 * Pi / n * i), 0.0f });
+		glTexCoord2f(tx.fX, tx.fY);
 		glVertex3f(R * cos(2 * Pi / n * i), R * sin(2 * Pi / n * i), 0.0f);
 	}
 	glEnd();
@@ -176,7 +268,9 @@ void DrawCylinder()
 	glNormal3f(0.0f, 0.0f, -1.0f);
 	for (int i = 0; i < n; i++)
 	{
-		glTexCoord2f(R * cos(2 * Pi / n * i), R * sin(2 * Pi / n * i));
+		//glTexCoord2f(R * cos(2 * Pi / n * i), R * sin(2 * Pi / n * i));
+		Vector3 tx = VertexToTexcoord({ 0,0,0 }, { R * cos(2 * Pi / n * i), R * sin(2 * Pi / n * i), -1.0f });
+		glTexCoord2f(tx.fX, tx.fY);
 		glVertex3f(R * cos(2 * Pi / n * i), R * sin(2 * Pi / n * i), -1.0f);
 	}
 	glEnd();
@@ -191,7 +285,9 @@ void DrawCylinder()
 	glNormal3f(0.0f, 0.0f, 1.0f);
 	for (int i = 0; i < n; i++)
 	{
-		glTexCoord2f(R * cos(2 * Pi / n * i), R * sin(2 * Pi / n * i));
+		//glTexCoord2f(R * cos(2 * Pi / n * i), R * sin(2 * Pi / n * i));
+		Vector3 tx = VertexToTexcoord({ 0,0,0 }, { R * cos(2 * Pi / n * i), R * sin(2 * Pi / n * i), 1.0f });
+		glTexCoord2f(tx.fX, tx.fY);
 		glVertex3f(R * cos(2 * Pi / n * i), R * sin(2 * Pi / n * i), 1.0f);
 	}
 	glEnd();
@@ -211,13 +307,21 @@ void DrawCylinder()
 		ver_d = { (double)R * cos(2 * Pi / n * i), (double)R * sin(2 * Pi / n * i), 1.0 };
 		normal = Cross(ver_c - ver_b, ver_a - ver_b).Normalize();
 		glNormal3f(normal.fX, normal.fY, normal.fZ);
-		glTexCoord2f((float)i / n * R * Pi, 1.0f);
+		//glTexCoord2f((float)i / n , 1.0f);
+		Vector3 tx = VertexToTexcoord({ 0,0,0 }, ver_a);
+		glTexCoord2f(tx.fX, tx.fY);
 		glVertex3f(ver_a.fX, ver_a.fY, ver_a.fZ);
-		glTexCoord2f((float)(i + 1) / n * R * Pi, 1.0f);
+		//glTexCoord2f((float)(i + 1) / n , 1.0f);
+		tx = VertexToTexcoord({ 0,0,0 }, ver_b);
+		glTexCoord2f(tx.fX, tx.fY);
 		glVertex3f(ver_b.fX, ver_b.fY, ver_b.fZ);
-		glTexCoord2f((float)(i + 1) / n * R * Pi, 0.0f);
+		//glTexCoord2f((float)(i + 1) / n , 0.0f);
+		tx = VertexToTexcoord({ 0,0,0 }, ver_c);
+		glTexCoord2f(tx.fX, tx.fY);
 		glVertex3f(ver_c.fX, ver_c.fY, ver_c.fZ);
-		glTexCoord2f((float)i / n * R * Pi, 0.0f);
+		//glTexCoord2f((float)i / n , 0.0f);
+		tx = VertexToTexcoord({ 0,0,0 }, ver_d);
+		glTexCoord2f(tx.fX, tx.fY);
 		glVertex3f(ver_d.fX, ver_d.fY, ver_d.fZ);
 	}
 	glEnd();
@@ -236,7 +340,9 @@ void DrawCone()
 	glNormal3f(0.0f, 0.0f, -1.0f);
 	for (int i = 0; i < n; i++)
 	{
-		glTexCoord2f(R * cos(2 * Pi / n * i), R * sin(2 * Pi / n * i));
+		//glTexCoord2f(R * cos(2 * Pi / n * i), R * sin(2 * Pi / n * i));
+		Vector3 tx = VertexToTexcoord({ 0,0,0.5 }, { R * cos(2 * Pi / n * i), R * sin(2 * Pi / n * i), -1.0f });
+		glTexCoord2f(tx.fX, tx.fY);
 		glVertex3f(R * cos(2 * Pi / n * i), R * sin(2 * Pi / n * i), -1.0f);
 	}
 	glEnd();
@@ -255,11 +361,17 @@ void DrawCone()
 		ver_b = { (double)R * cos(2 * Pi / n * (i + 1)), (double)R * sin(2 * Pi / n * (i + 1)), -1.0 };
 		normal = Cross(ver_c - ver_b, ver_a - ver_b).Normalize();
 		glNormal3f(normal.fX, normal.fY, normal.fZ);
-		glTexCoord2f((float)i / n * R * Pi, 1.0f);
+		//glTexCoord2f((float)i / n , 1.0f);
+		Vector3 tx = VertexToTexcoord({ 0,0,0.5 }, ver_a);
+		glTexCoord2f(tx.fX, tx.fY);
 		glVertex3f(ver_a.fX, ver_a.fY, ver_a.fZ);
-		glTexCoord2f((float)(i + 1) / n * R * Pi, 1.0f);
+		//glTexCoord2f((float)(i + 1) / n , 1.0f);
+		tx = VertexToTexcoord({ 0,0,0.5 }, ver_a);
+		glTexCoord2f(tx.fX, tx.fY);
 		glVertex3f(ver_b.fX, ver_b.fY, ver_b.fZ);
-		glTexCoord2f((float)(i + 0.5) / n * R * Pi, 0.0f);
+		//glTexCoord2f((float)(i + 0.5) / n , 0.0f);
+		tx = VertexToTexcoord({ 0,0,0.5 }, ver_a);
+		glTexCoord2f(tx.fX, tx.fY);
 		glVertex3f(ver_c.fX, ver_c.fY, ver_c.fZ);
 	}
 	glEnd();
@@ -269,7 +381,47 @@ void DrawCone()
 
 void DrawBall()
 {
+	int latitu = pow(n, 0.5), longitu = pow(n, 0.5);
+	glEnable(GL_TEXTURE_2D);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
 
+	glBindTexture(GL_TEXTURE_2D, grimTexture.textCode);
+	glBegin(GL_QUADS);
+	float rz1, rz2, rxy1, rxy2;
+	for (size_t i = 0; i < longitu; i++)
+	{
+		for (size_t j = 0; j < latitu; j++)
+		{
+			rz1 = (Pi * j / latitu);
+			rz2 = (Pi * (j + 1) / latitu);
+			rxy1 = 2 * Pi * i / longitu;
+			rxy2 = 2 * Pi * (i + 1) / longitu;
+			va = { (double)R * sin(rz1) * cos(rxy1),(double)R * sin(rz1) * sin(rxy1),(double)R * cos(rz1) };
+			vb = { (double)R * sin(rz2) * cos(rxy1),(double)R * sin(rz2) * sin(rxy1),(double)R * cos(rz2) };
+			vc = { (double)R * sin(rz2) * cos(rxy2),(double)R * sin(rz2) * sin(rxy2),(double)R * cos(rz2) };
+			vd = { (double)R * sin(rz1) * cos(rxy2),(double)R * sin(rz1) * sin(rxy2),(double)R * cos(rz1) };
+			normal = Cross(vd - vb, va - vc).Normalize();
+			glNormal3f(normal.fX, normal.fY, normal.fZ);
+			//glTexCoord2f((float)i / longitu, (float)j / latitu);
+			Vector3 tx = VertexToTexcoord({ 0,0,0 }, va);
+			glTexCoord2f(tx.fX, tx.fY);
+			glVertex3f(va.fX, va.fY, va.fZ);
+			//glTexCoord2f((float)i / longitu, (float)(j + 1) / latitu);
+			tx = VertexToTexcoord({ 0,0,0 }, vb);
+			glTexCoord2f(tx.fX, tx.fY);
+			glVertex3f(vb.fX, vb.fY, vb.fZ);
+			//glTexCoord2f((float)(i + 1) / longitu, (float)(j + 1) / latitu);
+			tx = VertexToTexcoord({ 0,0,0 }, vc);
+			glTexCoord2f(tx.fX, tx.fY);
+			glVertex3f(vc.fX, vc.fY, vc.fZ);
+			//glTexCoord2f((float)(i + 1) / longitu, (float)j / latitu);
+			tx = VertexToTexcoord({ 0,0,0 }, vd);
+			glTexCoord2f(tx.fX, tx.fY);
+			glVertex3f(vd.fX, vd.fY, vd.fZ);
+		}
+	}
+	glEnd();
+	glDisable(GL_TEXTURE_2D);
 }
 
 void DrawModel()
@@ -829,7 +981,7 @@ void myGlui()
 	new GLUI_Button(draw_panel, "Circle", CRTL_CIRCLE, glui_control);
 	new GLUI_Button(draw_panel, "Cylinder", CRTL_CYLINDER, glui_control);
 	new GLUI_Button(draw_panel, "Cone", CRTL_CONE, glui_control);
-	//new GLUI_Button(draw_panel, "Ball", CRTL_BALL, glui_control);
+	new GLUI_Button(draw_panel, "Ball", CRTL_BALL, glui_control);
 	new GLUI_Button(draw_panel, "Model", CRTL_MODEL, glui_control);
 
 	glui->set_main_gfx_window(g_main_window); //将子窗体glui与主窗体main_window绑定，当窗体glui中的控件的值发生过改变，则该glui窗口被重绘
@@ -856,7 +1008,7 @@ int main(int argc, char* argv[]) //程序入口
 	modelTexture.textCode = textInitialization(str);
 
 	grimTexture = Texture();
-	grimTexture.loadFromMemory(MakeMap, 128, 128, 4);
+	grimTexture.loadFromMemory(MakeMap, 16, 16, 4);
 
 	myGlui();
 	myInit();
@@ -864,7 +1016,6 @@ int main(int argc, char* argv[]) //程序入口
 
 	glutMainLoop();//进入glut消息循环
 
-	free(image);
 
 	return EXIT_SUCCESS;
 }

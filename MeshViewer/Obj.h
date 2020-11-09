@@ -19,7 +19,7 @@ Vector3 operator - (const Vector3& one, const Vector3& two);
 Vector3 operator * (const Vector3& one, double scale);
 Vector3 operator / (const Vector3& one, double scale);
 Vector3 Cross(Vector3& one, Vector3& two);
-Vector3 Dot(Vector3& va, Vector3& vb);
+float Dot(Vector3& va, Vector3& vb);
 
 struct Vector3
 {
